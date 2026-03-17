@@ -4,15 +4,24 @@
     <%= render "shared/form_header", title: local_assigns[:title], subtitle: local_assigns[:subtitle] %>
     <%= form.text_field :title, "Title", autocomplete: "off" %>
     <%= form.text_area :description, "Description", autocomplete: "off" %>
+
     <input type="hidden" name="space[user_id]" value="<%= current_user.id %>">
+
     <div>
       <label for="label" class="block mt-4 text-sm font-medium text-gray-700">
         Select people who can see this space
       </label>
-      <select name="space[users][]" class="form-text-field mt-1 capitalize" data-controller="slim-select" multiple>
+
+      <select
+        name="space[users][]"
+        class="form-text-field mt-1 capitalize"
+        data-controller="slim-select"
+        multiple
+      >
         <%= options_for_select(users.decorate.map { |user| [user.display_name, user.id] }, space_users) %>
       </select>
     </div>
+
     <div class="flex justify-end">
       <%= link_to "Back", "javascript:history.back()", class: "btn-normal" %>
       <%= form.submit "Save", class: "btn-blue" %>

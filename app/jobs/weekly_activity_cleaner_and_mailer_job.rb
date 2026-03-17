@@ -1,7 +1,12 @@
 class WeeklyActivityCleanerAndMailerJob < ApplicationJob
   def perform
-    ActiveRecord::Base.connection.execute("TRUNCATE TABLE survey_attempts RESTART IDENTITY")
-    ActiveRecord::Base.connection.execute("TRUNCATE TABLE survey_participant RESTART IDENTITY")
-    ActiveRecord::Base.connection.execute("TRUNCATE TABLE survey_answers RESTART IDENTITY")
+    Survey::Attempt.delete_all
+    Survey::Participant.delete_all
+    Survey::Answer.delete_all
+
+    connection = ActiveRecord::Base.connection
+    %w[survey_attempts survey_participant survey_answers].each do |table_name|
+      connection.reset_pk_sequence!(table_name) if connection.respond_to?(:reset_pk_sequence!)
+    end
   end
 end

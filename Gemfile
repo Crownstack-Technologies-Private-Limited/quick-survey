@@ -1,6 +1,3 @@
-source "https://rubygems.org"
-git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-
 # frozen_string_literal: true
 
 source "https://rubygems.org"
@@ -13,8 +10,8 @@ gem "rails", "8.1.1"
 
 gem "propshaft"
 
-# Use postgresql as the database for Active Record
-gem "pg"
+# Use sqlite as the database for Active Record
+gem "sqlite3"
 
 # Use Puma as the app server [https://github.com/puma/puma]
 gem "puma"
@@ -42,6 +39,7 @@ gem "draper"
 gem "wicked_pdf", github: "mileszs/wicked_pdf", branch: "master"
 gem "wkhtmltopdf-binary"
 gem "json"
+gem "cgi"
 gem "pagy"
 
 # Reduces boot times through caching; required in config/boot.rb

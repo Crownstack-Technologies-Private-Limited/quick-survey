@@ -101,7 +101,7 @@ export default class extends Controller {
     let element = document.querySelector("meta[name='current-account']");
     if (element == null) return;
     this.current_account = element.getAttribute("content");
-    const url ="/"+ this.current_account +
+    const url = "/" + this.current_account +
       "/questions/reorder?question_id=" +
       this.questionId +
       "&order=" +
