@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus";
-import { list } from "postcss";
 
 export default class extends Controller {
   static values = {
