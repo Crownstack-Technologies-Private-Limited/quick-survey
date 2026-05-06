@@ -64,6 +64,8 @@ group :development do
   gem "listen", "~> 3.3"
   gem "letter_opener"
   gem "htmlbeautifier"
+  gem "rubocop-rails", require: false
+  gem "rubocop-performance", require: false
 end
 
 group :test do
