@@ -1,94 +1,109 @@
-# Quick Survey
+# Quick Survey 📊
 
-A modern Ruby on Rails 8.0 application for creating and managing surveys.
+Quick Survey is an open-source, modern Ruby on Rails 8.0 application designed for creating, managing, and analyzing surveys with ease. Built with performance and scalability in mind, it leverages the latest Rails features and a robust multi-tenant architecture.
 
-## Prerequisites
+---
 
-- **Ruby**: 3.3.0 (Check `.ruby-version`)
-- **Node.js**: 22.x (Check `.nvmrc`)
+## 🚀 Features
+
+- **Multi-Tenancy**: Built-in support for multiple accounts/organizations using `acts_as_tenant`.
+- **Dynamic Survey Builder**: Create surveys with various question types (checklists, scores, yes/no).
+- **Organizational Structure**: Organize surveys into **Spaces** and **Folders**.
+- **Real-time Processing**: Background jobs powered by **SolidQueue 1.0**.
+- **Modern Frontend**: Fast, reactive UI using **Tailwind CSS**, **Stimulus**, and **Turbo**.
+- **PDF Generation**: Export survey results using `wicked_pdf`.
+
+## 🛠 Tech Stack
+
+- **Framework**: Ruby on Rails 8.0
+- **Database**: PostgreSQL
+- **Background Jobs**: SolidQueue
+- **Frontend**: Tailwind CSS, esbuild, Stimulus, Hotwire (Turbo)
+- **Multi-Tenancy**: `acts_as_tenant`
+- **Authentication**: Devise
+
+---
+
+## 💻 Local Development
+
+### Prerequisites
+
+- **Ruby**: 3.3.0
+- **Node.js**: 22.x
 - **Yarn**: 1.x
 - **PostgreSQL**: 13+
 
-## Local Setup
+### Setup Instructions
 
-1. **Clone the repository**:
+1. **Clone & Enter**:
    ```bash
    git clone https://github.com/Crownstack-Technologies-Private-Limited/quick-survey
    cd quick-survey
    ```
 
-2. **Install Ruby dependencies**:
+2. **Install Dependencies**:
    ```bash
    bundle install
-   ```
-
-3. **Install JavaScript dependencies**:
-   ```bash
    yarn install
    ```
 
-4. **Database Setup**:
-   Ensure PostgreSQL is running locally, then run:
+3. **Database Setup**:
+   Ensure PostgreSQL is running, then initialize the database and run migrations:
    ```bash
    bin/rails db:prepare
    ```
 
-5. **Start the Development Server**:
-   This will start both the Rails server and the CSS/JS watchers:
+4. **Run the App**:
+   Start the development server with watchers for CSS and JS:
    ```bash
    bin/dev
    ```
-   The application will be available at `http://localhost:3000`.
+   Visit `http://localhost:3000` to see the app in action.
 
-## Background Jobs (SolidQueue)
+### Running Tests
 
-This project uses **SolidQueue 1.0+** for background job processing.
+We use Minitest for testing. Run the suite with:
+```bash
+bin/rails test
+```
 
-- **Local Development**: In development, SolidQueue is typically configured to run in-process or via a separate worker command.
-- **Production**: On Render, SolidQueue runs as a plugin inside the Puma process (configured in `config/puma.rb`).
+---
 
-## Deployment (Render)
+## 🤝 Contributing
 
-The application is configured for deployment on [Render](https://render.com/).
+We love contributions! Whether you're fixing a bug, improving documentation, or adding a new feature, here's how you can help:
 
-### Configuration
+1. **Fork the repository**.
+2. **Create a feature branch**: `git checkout -b feature/your-feature-name`.
+3. **Commit your changes**: `git commit -am 'Add some feature'`.
+4. **Push to the branch**: `git push origin feature/your-feature-name`.
+5. **Open a Pull Request**.
 
-- **Environment**: Production
+### Code Style
+- Follow standard Ruby and Rails conventions.
+- Use `htmlbeautifier` for template formatting.
+- Ensure all tests pass before submitting.
+
+---
+
+## 🚢 Deployment (Render)
+
+This project is optimized for deployment on **Render**.
+
 - **Build Command**: `RAILS_ENV=production ./bin/render-build.sh`
 - **Start Command**: `bundle exec puma -C config/puma.rb`
 
-### Required Environment Variables
+**Important**: Ensure `DATABASE_URL` and `RAILS_MASTER_KEY` are configured in your environment settings.
 
-Ensure the following environment variables are set in your Render dashboard:
+---
 
-- `DATABASE_URL`: The connection string for your PostgreSQL database.
-- `RAILS_MASTER_KEY`: Your Rails master key for decrypting credentials.
-- `SCREENER_DATABASE_PASSWORD`: (If applicable) Database password if not using `DATABASE_URL`.
+## 📄 License
 
-### Build Script (`bin/render-build.sh`)
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-The deployment uses a custom build script that handles dependency installation, asset precompilation, and database migrations:
-```bash
-#!/usr/bin/env bash
-set -o errexit
+## 📞 Contact & Support
 
-yarn install
-bundle install
-bundle exec rake assets:precompile
-bundle exec rake assets:clean
-bundle exec rake db:migrate
-```
+If you have questions or need help, feel free to open an issue or reach out to the maintainers at Crownstack Technologies.
 
-## Database Schema (SolidQueue 1.0 Support)
-
-The `config/database.yml` is configured for multi-database support required by SolidQueue 1.0+:
-```yaml
-production:
-  primary:
-    adapter: postgresql
-    url: <%= ENV['DATABASE_URL'] %>
-  queue:
-    adapter: postgresql
-    url: <%= ENV['DATABASE_URL'] %>
-```
-This ensures that both the application and the background job processor use the same database connection on Render.
+---
+*Built with ❤️ by the open-source community.*
