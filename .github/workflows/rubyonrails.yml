@@ -37,5 +37,11 @@ jobs:
       - name: Set up database schema
         run: bin/rails db:schema:load
       # Run any pending migrations
-      - name: Run migratins
+      - name: Run migrations
         run: bin/rails db:migrate RAILS_ENV=test
+      # Run tests
+      - name: Run tests
+        run: bin/rails test
+      # Run linter
+      - name: Run linter
+        run: bundle exec rubocop
