@@ -69,22 +69,6 @@ bin/rails test
 
 ---
 
-## 🤝 Contributing
-
-We love contributions! Whether you're fixing a bug, improving documentation, or adding a new feature, here's how you can help:
-
-1. **Fork the repository**.
-2. **Create a feature branch**: `git checkout -b feature/your-feature-name`.
-3. **Commit your changes**: `git commit -am 'Add some feature'`.
-4. **Push to the branch**: `git push origin feature/your-feature-name`.
-5. **Open a Pull Request**.
-
-### Code Style
-- Follow standard Ruby and Rails conventions.
-- Use `htmlbeautifier` for template formatting.
-- Ensure all tests pass before submitting.
-
----
 
 ## 🚢 Deployment (Render)
 
@@ -94,16 +78,3 @@ This project is optimized for deployment on **Render**.
 - **Start Command**: `bundle exec puma -C config/puma.rb`
 
 **Important**: Ensure `DATABASE_URL` and `RAILS_MASTER_KEY` are configured in your environment settings.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact & Support
-
-If you have questions or need help, feel free to open an issue or reach out to the maintainers at Crownstack Technologies.
-
----
-*Built with ❤️ by the open-source community.*
