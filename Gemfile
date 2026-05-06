@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.0"
+ruby "3.3.1"
 
 # Bundle edge Rails instead: gem 'rails', [https://github.com/rails/rails]
 gem "rails", "7.1.3.4"
