@@ -80,10 +80,9 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  primary: &primary_production
-    <<: *default
-    database: screener_production
-    username: <%= ENV['SCREENER_DATABASE_USERNAME'] || 'screener' %>
-    password: <%= ENV['SCREENER_DATABASE_PASSWORD'] %>
+  primary:
+    adapter: postgresql
+    url: <%= ENV['DATABASE_URL'] %>
   queue:
-    <<: *primary_production
+    adapter: postgresql
+    url: <%= ENV['DATABASE_URL'] %>
