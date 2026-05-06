@@ -29,7 +29,7 @@ class SurveyPolicy < ApplicationPolicy
 
   def show?
     if !user.member?
-      return true
+      true
     elsif record.folder
       record.folder.space.users.include?(user)
     else
@@ -40,10 +40,10 @@ class SurveyPolicy < ApplicationPolicy
   def pin?
     survey = record
     users = survey.folder.space.users
-    if users.include?(user) and !survey.active?
-      return true
+    if users.include?(user) && !survey.active?
+      true
     else
-      return false
+      false
     end
   end
 

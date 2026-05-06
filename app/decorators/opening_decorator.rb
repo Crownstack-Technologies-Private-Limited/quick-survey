@@ -8,6 +8,6 @@ class OpeningDecorator < Draper::Decorator
   end
 
   def display_job
-    "#{job}".titleize
+    job.to_s.titleize
   end
 end

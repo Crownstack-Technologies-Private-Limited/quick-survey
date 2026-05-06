@@ -6,7 +6,9 @@ class SpacesController < BaseController
     authorize :spaces
     @all_spaces = current_user.spaces.includes(:users).order(created_at: :desc)
     @pinned_spaces = current_user.pinned.order(created_at: :desc)
-    @my_spaces = @all_spaces.select { |space| space.user_id == current_user.id && space.archive == false } - @pinned_spaces
+    @my_spaces = @all_spaces.select { |space|
+      space.user_id == current_user.id && space.archive == false
+    } - @pinned_spaces
     @archived_spaces = @all_spaces.select { |space| space.archive == true }
     @shared_spaces = @all_spaces - @my_spaces - @archived_spaces - @pinned_spaces
 
@@ -32,7 +34,10 @@ class SpacesController < BaseController
       if @space.persisted?
         format.html { redirect_to space_folders_path(@space), notice: "Space was created successfully." }
       else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace(Space.new, partial: "spaces/form", locals: { space: @space, users: User.all, title: "Add New Space", subtitle: "Please fill in the details of your new space. A space is a groupd of similar threads.", url: spaces_path, method: "post", space_users: params[:space][:users] }) }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(Space.new, partial: "spaces/form",
+                                                               locals: { space: @space, users: User.all, title: "Add New Space", subtitle: "Please fill in the details of your new space. A space is a groupd of similar threads.", url: spaces_path, method: "post", space_users: params[:space][:users] })
+        end
       end
     end
   end
@@ -44,7 +49,10 @@ class SpacesController < BaseController
       if @space.errors.empty?
         format.html { redirect_to space_folders_path(@space), notice: "Space was updated successfully." }
       else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace(@space, partial: "spaces/form", locals: { space: @space, users: User.all, title: "Edit Space", subtitle: "Please update the details of already existing space.", url: spaces_path, method: "post", space_users: params[:space][:users] }) }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(@space, partial: "spaces/form",
+                                                            locals: { space: @space, users: User.all, title: "Edit Space", subtitle: "Please update the details of already existing space.", url: spaces_path, method: "post", space_users: params[:space][:users] })
+        end
       end
     end
   end
@@ -52,7 +60,7 @@ class SpacesController < BaseController
   def destroy
     authorize @space
     @space.destroy
-    redirect_to spaces_path, status: 303, notice: "Space was removed successfully."
+    redirect_to spaces_path, status: :see_other, notice: "Space was removed successfully."
   end
 
   def pin
@@ -71,25 +79,25 @@ class SpacesController < BaseController
 
   def archive
     authorize @space
-    if ArchiveSpace.call(@space, current_user).result
-      redirect_to space_folders_path(@space), notice: "Space was archived successfully."
-    end
+    return unless ArchiveSpace.call(@space, current_user).result
+
+    redirect_to space_folders_path(@space), notice: "Space was archived successfully."
   end
 
   def unarchive
     authorize @space
-    if UnarchiveSpace.call(@space, current_user).result
-      redirect_to space_folders_path(@space), notice: "Space was unarchived successfully."
-    end
+    return unless UnarchiveSpace.call(@space, current_user).result
+
+    redirect_to space_folders_path(@space), notice: "Space was unarchived successfully."
   end
 
   private
 
   def set_space
-    @space ||= Space.includes(:users).find(params[:id])
+    @set_space ||= Space.includes(:users).find(params[:id])
   end
 
   def space_params
-    params.require(:space).permit(:title, :description, :user_id, :users)
+    params.expect(space: %i[title description user_id users])
   end
 end

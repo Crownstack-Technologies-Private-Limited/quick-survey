@@ -10,7 +10,7 @@ class AddFolderToSpace < Patterns::Service
     begin
       add_folder
       email
-    rescue
+    rescue StandardError
       folder
     end
     folder
@@ -21,7 +21,8 @@ class AddFolderToSpace < Patterns::Service
   end
 
   def email
-    return unless !send_email.nil?
+    return if send_email.nil?
+
     (space.users - [actor]).each do |user|
       if deliver_email?(user)
         FoldersMailer.with(actor: actor, user: user, folder: folder, space: space).folder_email.deliver_later
@@ -30,7 +31,7 @@ class AddFolderToSpace < Patterns::Service
   end
 
   def deliver_email?(user)
-    (actor != user) and user.email_enabled and user.sign_in_count > 0
+    (actor != user) and user.email_enabled and user.sign_in_count.positive?
   end
 
   attr_reader :space, :folder, :actor, :send_email

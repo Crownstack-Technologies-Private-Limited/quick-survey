@@ -1,35 +1,37 @@
-class Survey::SurveyDecorator < Draper::Decorator
-  delegate_all
+module Survey
+  class SurveyDecorator < Draper::Decorator
+    delegate_all
 
-  def survey_type_color
-    if self.checklist?
-      "yellow"
-    elsif self.score?
-      "gray"
+    def survey_type_color
+      if checklist?
+        "yellow"
+      elsif score?
+        "gray"
+      end
     end
-  end
 
-  def survey_for_color
-    if self.candidate?
-      "gray"
-    elsif self.user?
-      "green"
+    def survey_for_color
+      if candidate?
+        "gray"
+      elsif user?
+        "green"
+      end
     end
-  end
 
-  def display_survey_type
-    survey_type.titleize
-  end
-
-  def display_survey_for
-    if survey_for == "user"
-      "Team"
-    else
-      survey_for.titleize
+    def display_survey_type
+      survey_type.titleize
     end
-  end
 
-  def display_name
-    name.upcase_first
+    def display_survey_for
+      if survey_for == "user"
+        "Team"
+      else
+        survey_for.titleize
+      end
+    end
+
+    def display_name
+      name.upcase_first
+    end
   end
 end

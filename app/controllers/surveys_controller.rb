@@ -1,8 +1,9 @@
 class SurveysController < BaseController
   include Pagy::Backend
 
-  before_action :set_survey, only: [:edit, :update, :destroy, :show, :clone, :archive_survey, :unarchive_survey, :pin, :unpin]
-  before_action :find_survey, only: [:attempts, :delete_attempts]
+  before_action :set_survey,
+                only: %i[edit update destroy show clone archive_survey unarchive_survey pin unpin]
+  before_action :find_survey, only: %i[attempts delete_attempts]
 
   def index
     authorize :Survey
@@ -10,6 +11,16 @@ class SurveysController < BaseController
     surveys = Survey::Survey.all.active.where(folder_id: nil)
     @pagy, @surveys = pagy_nil_safe(params, surveys, items: LIMIT)
     render_partial("surveys/survey", collection: @surveys, cached: false) if stale?(@surveys)
+  end
+
+  def show
+    authorize @survey
+    @question = Survey::Question.new
+    if RecentSurvey.exists?(user: current_user, survey_surveys: @survey)
+      RecentSurvey.where(user: current_user, survey_surveys: @survey).first.increment!(:count)
+    else
+      RecentSurvey.create(user: current_user, survey_surveys: @survey, count: 1)
+    end
   end
 
   def new
@@ -22,11 +33,24 @@ class SurveysController < BaseController
     authorize @survey
   end
 
-  def destroy
-    authorize @survey
+  def create
+    authorize :Survey
+    @survey = Survey::Survey.new(survey_params)
+    @survey.user = current_user
 
-    if DestroySurvey.call(@survey).result
-      redirect_to archived_surveys_path, notice: "Survey was successfully deleted."
+    respond_to do |format|
+      if @survey.save
+        if @survey.folder_id.present?
+          @folder = Folder.find(@survey.folder_id)
+          format.html do
+            redirect_to space_folder_path(@folder.space, @folder), notice: "Survey was successfully created."
+          end
+        else
+          format.html { redirect_to survey_path(@survey), notice: "Survey was successfully created." }
+        end
+      else
+        format.html { redirect_to new_survey_path, notice: "Failed to create survey." }
+      end
     end
   end
 
@@ -41,39 +65,19 @@ class SurveysController < BaseController
     end
   end
 
-  def create
-    authorize :Survey
-    @survey = Survey::Survey.new(survey_params)
-    @survey.user = current_user
-
-    respond_to do |format|
-      if @survey.save
-        if @survey.folder_id.present?
-          @folder = Folder.find(@survey.folder_id)
-          format.html { redirect_to space_folder_path(@folder.space, @folder), notice: "Survey was successfully created." }
-        else
-          format.html { redirect_to survey_path(@survey), notice: "Survey was successfully created." }
-        end
-      else
-        format.html { redirect_to new_survey_path, notice: "Failed to create survey." }
-      end
-    end
-  end
-
-  def show
+  def destroy
     authorize @survey
-    @question = Survey::Question.new
-    if RecentSurvey.where(user: current_user, survey_surveys: @survey).exists?
-      RecentSurvey.where(user: current_user, survey_surveys: @survey).first.increment!(:count)
-    else
-      RecentSurvey.create(user: current_user, survey_surveys: @survey, count: 1)
-    end
+
+    return unless DestroySurvey.call(@survey).result
+
+    redirect_to archived_surveys_path, notice: "Survey was successfully deleted."
   end
 
   def attempts
     authorize @survey
     @survey = Survey::Survey.find(params[:survey_id])
-    attempts = Survey::Attempt.where(survey_id: params[:survey_id]).includes(:participant, :survey, :actor).order(updated_at: :desc).order(created_at: :desc).all
+    attempts = Survey::Attempt.where(survey_id: params[:survey_id]).includes(:participant, :survey,
+                                                                             :actor).order(updated_at: :desc).order(created_at: :desc).all
     @pagy, @attempts = pagy(attempts, items: 10)
     render_partial("surveys/attempt", collection: @attempts, cached: true) if stale?(@attempts)
   end
@@ -100,17 +104,16 @@ class SurveysController < BaseController
     authorize @survey
 
     @clone = Survey::Survey.new
-    @clone.name = @survey.name + " (Copy)"
+    @clone.name = "#{@survey.name} (Copy)"
     @clone.survey_type = @survey.survey_type
     @clone.description = @survey.description.nil? ? "N/A" : @survey.description
     @clone.save
 
     @survey.questions.each do |question|
-      cloned_question = Survey::Question.new(text: question.text, description: question.description, survey_id: @clone.id)
+      cloned_question = Survey::Question.new(text: question.text, description: question.description,
+                                             survey_id: @clone.id)
       cloned_question.save
-      if cloned_question.persisted?
-        add_options(cloned_question, @clone)
-      end
+      add_options(cloned_question, @clone) if cloned_question.persisted?
     end
 
     redirect_to survey_path(@clone)
@@ -127,9 +130,9 @@ class SurveysController < BaseController
 
   def archive_survey
     authorize @survey
-    if ArchiveSurvey.call(@survey).result
-      redirect_to archived_surveys_path, notice: "Survey has been archived."
-    end
+    return unless ArchiveSurvey.call(@survey).result
+
+    redirect_to archived_surveys_path, notice: "Survey has been archived."
   end
 
   def unarchive_survey
@@ -149,6 +152,6 @@ class SurveysController < BaseController
   end
 
   def survey_params
-    params.require(:survey_survey).permit(:name, :survey_type, :description, :folder_id)
+    params.expect(survey_survey: %i[name survey_type description folder_id])
   end
 end

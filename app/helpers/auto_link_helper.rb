@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 module AutoLinkHelper
   require "active_support/core_ext/object/blank"
   require "active_support/core_ext/array/extract_options"
@@ -49,7 +47,8 @@ module AutoLinkHelper
         #   auto_link(post_body, :all, :target => "_blank")
         #   # => "Welcome to my new blog at <a href=\"http://www.myblog.com/\" target=\"_blank\">http://www.myblog.com</a>.
         #         Please e-mail me at <a href=\"mailto:me@email.com\">me@email.com</a>."
-        def auto_link(text, *args, &block) #link = :all, html = {}, &block)
+        # link = :all, html = {}, &block)
+        def auto_link(text, *args, &)
           return "".html_safe if text.blank?
 
           options = args.size == 2 ? {} : args.extract_options! # this is necessary because the old auto_link API has a Hash as its last parameter
@@ -57,14 +56,17 @@ module AutoLinkHelper
             options[:link] = args[0] || :all
             options[:html] = args[1] || {}
           end
-          options.reverse_merge!(:link => :all, :html => {})
+          options.reverse_merge!(link: :all, html: {})
           sanitize = (options[:sanitize] != false)
           sanitize_options = options[:sanitize_options] || {}
           text = conditional_sanitize(text, sanitize, sanitize_options).to_str
           case options[:link].to_sym
-          when :all then conditional_html_safe(auto_link_email_addresses(auto_link_urls(text, options[:html], options, &block), options[:html], &block), sanitize)
-          when :email_addresses then conditional_html_safe(auto_link_email_addresses(text, options[:html], &block), sanitize)
-          when :urls then conditional_html_safe(auto_link_urls(text, options[:html], options, &block), sanitize)
+          when :all then conditional_html_safe(
+            auto_link_email_addresses(auto_link_urls(text, options[:html], options, &), options[:html], &), sanitize
+          )
+          when :email_addresses then conditional_html_safe(auto_link_email_addresses(text, options[:html], &),
+                                                           sanitize)
+          when :urls then conditional_html_safe(auto_link_urls(text, options[:html], options, &), sanitize)
           end
         end
 
@@ -76,12 +78,12 @@ module AutoLinkHelper
               }ix
 
         # regexps for determining context, used high-volume
-        AUTO_LINK_CRE = [/<[^>]+$/, /^[^>]*>/, /<a\b.*?>/i, /<\/a>/i]
+        AUTO_LINK_CRE = [/<[^>]+$/, /^[^>]*>/, /<a\b.*?>/i, %r{</a>}i].freeze
 
-        AUTO_EMAIL_LOCAL_RE = /[\w.!#\$%&'*\/=?^`{|}~+-]/
+        AUTO_EMAIL_LOCAL_RE = %r{[\w.!#\$%&'*/=?^`{|}~+-]}
         AUTO_EMAIL_RE = /(?<!#{AUTO_EMAIL_LOCAL_RE})[\w.!#\$%+-]\.?#{AUTO_EMAIL_LOCAL_RE}*@[\w-]+(?:\.[\w-]+)+/
 
-        BRACKETS = { "]" => "[", ")" => "(", "}" => "{" }
+        BRACKETS = { "]" => "[", ")" => "(", "}" => "{" }.freeze
 
         WORD_PATTERN = RUBY_VERSION < "1.9" ? '\w' : '\p{Word}'
 
@@ -90,30 +92,32 @@ module AutoLinkHelper
         def auto_link_urls(text, html_options = {}, options = {})
           link_attributes = html_options.stringify_keys
           text.gsub(AUTO_LINK_RE) do
-            scheme, href = $1, $&
+            scheme = ::Regexp.last_match(1)
+            href = ::Regexp.last_match(0)
             punctuation = []
 
-            if auto_linked?($`, $')
+            if auto_linked?(::Regexp.last_match.pre_match, ::Regexp.last_match.post_match)
               # do not change string; URL is already linked
               href
             else
               # don't include trailing punctuation character as part of the URL
-              while href.sub!(/[^#{WORD_PATTERN}\/-=&]$/, "")
-                punctuation.push $&
-                if opening = BRACKETS[punctuation.last] and href.scan(opening).size > href.scan(punctuation.last).size
+              while href.sub!(%r{[^#{WORD_PATTERN}/-=&]$}o, "")
+                punctuation.push ::Regexp.last_match(0)
+                if ((opening = BRACKETS[punctuation.last])) && (href.scan(opening).size > href.scan(punctuation.last).size)
                   href << punctuation.pop
                   break
                 end
               end
 
               link_text = block_given? ? yield(href) : href
-              href = "http://" + href unless scheme
+              href = "http://#{href}" unless scheme
 
               unless options[:sanitize] == false
                 link_text = sanitize(link_text)
                 href = sanitize(href)
               end
-              content_tag(:a, link_text, link_attributes.merge("href" => href), !!options[:sanitize]) + punctuation.reverse.join("")
+              content_tag(:a, link_text, link_attributes.merge("href" => href),
+                          !options[:sanitize].nil?) + punctuation.reverse.join
             end
           end
         end
@@ -122,12 +126,12 @@ module AutoLinkHelper
         # each email is yielded and the result is used as the link text.
         def auto_link_email_addresses(text, html_options = {}, options = {})
           text.gsub(AUTO_EMAIL_RE) do
-            text = $&
+            text = ::Regexp.last_match(0)
 
-            if auto_linked?($`, $')
+            if auto_linked?(::Regexp.last_match.pre_match, ::Regexp.last_match.post_match)
               text.html_safe
             else
-              display_text = (block_given?) ? yield(text) : text
+              display_text = block_given? ? yield(text) : text
 
               unless options[:sanitize] == false
                 text = sanitize(text)
@@ -141,7 +145,7 @@ module AutoLinkHelper
         # Detects already linked context or position in the middle of a tag
         def auto_linked?(left, right)
           (left =~ AUTO_LINK_CRE[0] and right =~ AUTO_LINK_CRE[1]) or
-            (left.rindex(AUTO_LINK_CRE[2]) and $' !~ AUTO_LINK_CRE[3])
+            (left.rindex(AUTO_LINK_CRE[2]) and ::Regexp.last_match.post_match !~ AUTO_LINK_CRE[3])
         end
 
         def conditional_sanitize(target, condition, sanitize_options = {})

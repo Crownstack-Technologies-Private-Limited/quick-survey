@@ -30,9 +30,9 @@ class ChangePasswordForm
   end
 
   def verify_old_password
-    unless @user.valid_password?(original_password)
-      errors.add :original_password, "is not correct"
-    end
+    return if @user.valid_password?(original_password)
+
+    errors.add :original_password, "is not correct"
   end
 
   # This method is required

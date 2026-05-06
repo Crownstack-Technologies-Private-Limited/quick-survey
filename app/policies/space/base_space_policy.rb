@@ -1,2 +1,4 @@
-class Space::BaseSpacePolicy < ApplicationPolicy
+module Space
+  class BaseSpacePolicy < ApplicationPolicy
+  end
 end

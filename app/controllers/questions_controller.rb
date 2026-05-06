@@ -1,52 +1,9 @@
 class QuestionsController < BaseController
-  before_action :set_survey, only: [:create, :destroy, :update, :edit, :new]
-  before_action :set_question, only: [:edit, :update, :destroy, :show]
+  before_action :set_survey, only: %i[create destroy update edit new]
+  before_action :set_question, only: %i[edit update destroy show]
 
   def edit
     authorize @question
-  end
-
-  def destroy
-    authorize @question
-    @question.destroy
-    respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(@question) }
-    end
-  end
-
-  def update
-    authorize @question
-    respond_to do |format|
-      if @question.update(question_params)
-        format.turbo_stream { render turbo_stream: turbo_stream.update(:questions, partial: "surveys/questions/questions", locals: { questions: @survey.questions.order(:order), survey: @survey }, formats: [:turbo_stream]) }
-      else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace(@question, partial: "questions/form", locals: { survey: @survey, question: @question }) }
-      end
-    end
-  end
-
-  def reorder
-    authorize :question
-    @question = Survey::Question.find(params[:question_id])
-    @survey = Survey::Survey.find(params[:survey_id])
-    @question.update(order: params[:order].to_i)
-
-    if @question.save
-      @change_order = @survey.questions.where.not(id: @question.id).order(:order)
-      @change_order.size > 0 ?
-        @change_order.each do |question|
-        question.order < params[:order].to_i && question.order > 0 ? question.update(order: question.order - 1) :
-          question.update(order: question.order + 1)
-      end : nil
-
-      partial = render_to_string(partial: "surveys/questions/questions", locals: { questions: @survey.questions.order(:order), survey: @survey })
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.update(:survey_questions, partial)
-        end
-        format.html
-      end
-    end
   end
 
   def create
@@ -59,13 +16,73 @@ class QuestionsController < BaseController
     respond_to do |format|
       if @question.persisted?
         add_options(@question, @survey)
-        format.turbo_stream {
-          render turbo_stream: turbo_stream.update(:questions, partial: "surveys/questions/questions", locals: { questions: @survey.questions.order(:order), survey: @survey }, formats: [:turbo_stream]) +
-                               turbo_stream.replace(Survey::Question.new, partial: "surveys/questions/form", locals: { survey: @survey, question: Survey::Question.new, message: "Question was added successfully." })
-        }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update(:questions, partial: "surveys/questions/questions",
+                                                               locals: { questions: @survey.questions.order(:order), survey: @survey }, formats: [:turbo_stream]) +
+                               turbo_stream.replace(Survey::Question.new, partial: "surveys/questions/form",
+                                                                          locals: { survey: @survey, question: Survey::Question.new, message: "Question was added successfully." })
+        end
       else
-        format.turbo_stream { render turbo_stream: turbo_stream.replace(Survey::Question.new, partial: "surveys/questions/form", locals: { survey: @survey, question: @question }) }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(Survey::Question.new, partial: "surveys/questions/form",
+                                                                          locals: { survey: @survey, question: @question })
+        end
       end
+    end
+  end
+
+  def update
+    authorize @question
+    respond_to do |format|
+      if @question.update(question_params)
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update(:questions, partial: "surveys/questions/questions",
+                                                               locals: { questions: @survey.questions.order(:order), survey: @survey }, formats: [:turbo_stream])
+        end
+      else
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(@question, partial: "questions/form",
+                                                               locals: { survey: @survey, question: @question })
+        end
+      end
+    end
+  end
+
+  def destroy
+    authorize @question
+    @question.destroy
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@question) }
+    end
+  end
+
+  def reorder
+    authorize :question
+    @question = Survey::Question.find(params[:question_id])
+    @survey = Survey::Survey.find(params[:survey_id])
+    @question.update(order: params[:order].to_i)
+
+    return unless @question.save
+
+    @change_order = @survey.questions.where.not(id: @question.id).order(:order)
+    if @change_order.size.positive?
+      @change_order.each do |question|
+        if question.order < params[:order].to_i && question.order.positive?
+          question.update(order: question.order - 1)
+        else
+          question.update(order: question.order + 1)
+        end
+      end
+    end
+
+    partial = render_to_string(partial: "surveys/questions/questions",
+                               locals: { questions: @survey.questions.order(:order),
+                                         survey: @survey })
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.update(:survey_questions, partial)
+      end
+      format.html
     end
   end
 
@@ -76,9 +93,10 @@ class QuestionsController < BaseController
       Survey::Option.new(text: "Yes", question: question, correct: true, weight: 1).save
     elsif survey.survey_type == "score"
       Survey::Option.new(text: "Score", question: question, correct: true, weight: 10).save
-    else survey.survey_type == "yes_no"
+    else
+      survey.survey_type
       Survey::Option.new(text: "Yes", question: question, correct: true, weight: 1).save
-      Survey::Option.new(text: "No", question: question, correct: false, weight: 0).save     end
+      Survey::Option.new(text: "No", question: question, correct: false, weight: 0).save end
   end
 
   def set_question
@@ -86,7 +104,7 @@ class QuestionsController < BaseController
   end
 
   def question_params
-    params.require(:survey_question).permit(:text, :description, :survey_id)
+    params.expect(survey_question: %i[text description survey_id])
   end
 
   def set_survey

@@ -111,7 +111,7 @@ class SpacesTest < ApplicationSystemTestCase
       assert_no_text "Edit"
       assert_no_text "Archive"
       assert_no_text "Change Folder"
-      assert_text (/Pin Survey|Unpin Survey/)
+      assert_text(/Pin Survey|Unpin Survey/)
       assert_text "Show"
     end
     take_screenshot
@@ -133,7 +133,7 @@ class SpacesTest < ApplicationSystemTestCase
   test "admin can access folder of archived spaces" do
     @space = spaces(:archived)
     visit space_page_url
-    folder = @space.folders.first
+    @space.folders.first
     page.execute_script("arguments[0].click();", find("a", text: @space.folders.first.title))
     within "#folder-header" do
       assert_no_text "Add New Survey"

@@ -17,9 +17,7 @@ class SignUpForm
     build_children(registration_params)
 
     result = nil
-    if valid?
-      result = SignUp.call(account, user).result
-    end
+    result = SignUp.call(account, user).result if valid?
     result
   end
 
@@ -47,7 +45,7 @@ class SignUpForm
 
   def promote_errors(child)
     child.errors.each do |error|
-      errors.errors.append(error) if error.attribute == :email and email_error_non_exisisting?
+      errors.errors.append(error) if (error.attribute == :email) && email_error_non_exisisting?
     end
   end
 

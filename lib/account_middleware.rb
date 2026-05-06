@@ -4,11 +4,11 @@ class AccountMiddleware
   end
 
   def call(env)
-    request = ActionDispatch::Request.new env
+    ActionDispatch::Request.new env
     _, account_id, request_path = env["REQUEST_PATH"].split("/", 3)
 
-    if account_id =~ /\d+/
-      if account = Account.find_by(id: account_id)
+    if /\d+/.match?(account_id)
+      if (account = Account.find_by(id: account_id))
         Current.account = account
         ActsAsTenant.current_tenant = account
       else

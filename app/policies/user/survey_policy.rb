@@ -1,2 +1,4 @@
-class User::SurveyPolicy < User::BaseUserPolicy
+module User
+  class SurveyPolicy < User::BaseUserPolicy
+  end
 end

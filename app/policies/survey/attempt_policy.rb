@@ -1,21 +1,23 @@
-class Survey::AttemptPolicy < Survey::BaseSurveyPolicy
-  def answer?
-    true
-  end
+module Survey
+  class AttemptPolicy < Survey::BaseSurveyPolicy
+    def answer?
+      true
+    end
 
-  def submit?
-    true
-  end
+    def submit?
+      true
+    end
 
-  def report?
-    true
-  end
+    def report?
+      true
+    end
 
-  def score?
-    answer?
-  end
+    def score?
+      answer?
+    end
 
-  def check?
-    answer?
+    def check?
+      answer?
+    end
   end
 end

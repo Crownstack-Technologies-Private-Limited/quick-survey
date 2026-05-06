@@ -1,11 +1,13 @@
-class Survey::AttemptDecorator < Draper::Decorator
-  delegate_all
+module Survey
+  class AttemptDecorator < Draper::Decorator
+    delegate_all
 
-  def display_score
-    if survey.checklist?
-      "#{score.to_s}/#{survey.questions.count.to_s}"
-    else
-      score.to_s + "%"
+    def display_score
+      if survey.checklist?
+        "#{score}/#{survey.questions.count}"
+      else
+        "#{score}%"
+      end
     end
   end
 end

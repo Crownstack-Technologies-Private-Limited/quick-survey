@@ -1,4 +1,4 @@
-class SearchPolicy < Struct.new(:user, :search)
+SearchPolicy = Struct.new(:user, :search) do
   def surveys?
     true
   end

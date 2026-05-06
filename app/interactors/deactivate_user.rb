@@ -7,7 +7,7 @@ class DeactivateUser < Patterns::Service
     begin
       remove_from_spaces
       deactivate
-    rescue Exception => e
+    rescue Exception
       return false
     end
     true

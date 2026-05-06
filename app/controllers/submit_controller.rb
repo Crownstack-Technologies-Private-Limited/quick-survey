@@ -1,5 +1,5 @@
 class SubmitController < BaseController
-  before_action :set_attempt, only: [:checklist, :score, :submit, :yes_no]
+  before_action :set_attempt, only: %i[checklist score submit yes_no]
 
   def checklist
     authorize @attempt, :submit?
@@ -53,6 +53,6 @@ class SubmitController < BaseController
   end
 
   def set_attempt
-    @attempt ||= Survey::Attempt.find(params[:id])
+    @set_attempt ||= Survey::Attempt.find(params[:id])
   end
 end

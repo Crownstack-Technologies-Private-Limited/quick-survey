@@ -1,2 +1,4 @@
-class User::SpacePolicy < User::BaseUserPolicy
+module User
+  class SpacePolicy < User::BaseUserPolicy
+  end
 end

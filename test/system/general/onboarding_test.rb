@@ -45,7 +45,8 @@ class OnboardingTest < ApplicationSystemTestCase
       click_on "Send me reset password instructions"
       sleep(0.5)
     end
-    assert_selector "p.notice", text: "You will receive an email with instructions on how to reset your password in a few minutes."
+    assert_selector "p.notice",
+                    text: "You will receive an email with instructions on how to reset your password in a few minutes."
     doc = Nokogiri::HTML::Document.parse(ActionMailer::Base.deliveries.last.body.to_s)
     link = doc.css("a").first.values.first
     visit link
@@ -116,7 +117,8 @@ class OnboardingTest < ApplicationSystemTestCase
     end
 
     take_screenshot
-    assert_selector "p.notice", text: "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+    assert_selector "p.notice",
+                    text: "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
     doc = Nokogiri::HTML::Document.parse(ActionMailer::Base.deliveries.last.to_s)
     link = doc.css("a").first.values.first
     visit link
@@ -159,7 +161,8 @@ class OnboardingTest < ApplicationSystemTestCase
     end
     take_screenshot
 
-    assert_selector "p.notice", text: "You will receive an email with instructions for how to confirm your email address in a few minutes."
+    assert_selector "p.notice",
+                    text: "You will receive an email with instructions for how to confirm your email address in a few minutes."
     doc = Nokogiri::HTML::Document.parse(ActionMailer::Base.deliveries.last.to_s)
     link = doc.css("a").first.values.first
     visit link

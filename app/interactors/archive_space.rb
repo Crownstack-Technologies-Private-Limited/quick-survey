@@ -8,7 +8,7 @@ class ArchiveSpace < Patterns::Service
     begin
       archive_space
       send_email
-    rescue
+    rescue StandardError
       space
     end
     space
@@ -18,17 +18,17 @@ class ArchiveSpace < Patterns::Service
 
   def archive_space
     actor.pinned.destroy @space
-    @space.update(archive: true, archive_at: Time.now)
+    @space.update(archive: true, archive_at: Time.zone.now)
   end
 
   def send_email
-    (space.users).each do |user|
+    space.users.each do |user|
       SpacesMailer.with(space: space, user: user, actor: actor).archived_email.deliver_later if deliver_email?(user)
     end
   end
 
   def deliver_email?(user)
-    (actor != user) and user.email_enabled and user.sign_in_count > 0
+    (actor != user) and user.email_enabled and user.sign_in_count.positive?
   end
 
   attr_reader :space, :actor

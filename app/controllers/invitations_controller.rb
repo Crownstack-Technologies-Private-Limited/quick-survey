@@ -1,9 +1,12 @@
 class InvitationsController < Devise::InvitationsController
   def create
-    exisiting_user = User.find_by_email(params[:user][:email])
+    exisiting_user = User.find_by(email: params[:user][:email])
     respond_to do |format|
       if exisiting_user.present?
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("new_user", partial: "devise/invitations/form", locals: { resource: exisiting_user, message: "User already exists" }) }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("new_user", partial: "devise/invitations/form",
+                                                                locals: { resource: exisiting_user, message: "User already exists" })
+        end
       else
         @user = User.invite!(invitation_params, current_user)
         format.html { redirect_to users_path, notice: "User has been invited." }
@@ -18,10 +21,10 @@ class InvitationsController < Devise::InvitationsController
   end
 
   def invitation_params
-    params.require(:user).permit(:email, :account_id)
+    params.expect(user: %i[email account_id])
   end
 
   def accept_invitation_params
-    params.require(:user).permit(:first_name, :last_name)
+    params.expect(user: %i[first_name last_name])
   end
 end

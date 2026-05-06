@@ -14,11 +14,12 @@ class ApplicationController < ActionController::Base
     @redirect_path = request.path
   end
 
-  def show_referenced_alert(exception)
+  def show_referenced_alert(_exception)
     respond_to do |format|
-      format.turbo_stream {
-        render turbo_stream: turbo_stream.replace("modal", partial: "shared/modal", locals: { title: "Unable to Delete Record", message: "This record has been associated with other records in system therefore deleting this might result in unexpected behavior. If you want to delete this please make sure all assosications have been removed first.", main_button_visible: false })
-      }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("modal", partial: "shared/modal",
+                                                           locals: { title: "Unable to Delete Record", message: "This record has been associated with other records in system therefore deleting this might result in unexpected behavior. If you want to delete this please make sure all assosications have been removed first.", main_button_visible: false })
+      end
     end
   end
 
@@ -28,24 +29,23 @@ class ApplicationController < ActionController::Base
 
   def show_confirmation_alert(title, message)
     respond_to do |format|
-      format.turbo_stream {
-        render turbo_stream: turbo_stream.replace("modal", partial: "shared/modal", locals: { title: title, message: message, main_button_visible: true })
-      }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace("modal", partial: "shared/modal",
+                                                           locals: { title: title, message: message, main_button_visible: true })
+      end
     end
   end
 
-  etag {
-    if Rails.env == "production" or Rails.env == "staging"
-      deployment_version
-    end
-  }
+  etag do
+    deployment_version if Rails.env.production? || Rails.env.staging?
+  end
 
   fragment_cache_key do
     current_user.permission
   end
 
   def deployment_version
-    ENV["LATEST_GITHUB_COMMIT"] if Rails.env == "production" or Rails.env == "staging"
+    ENV.fetch("LATEST_GITHUB_COMMIT", nil) if Rails.env.production? || Rails.env.staging?
   end
 
   def after_sign_in_path_for(resource)
@@ -56,15 +56,15 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def after_sign_out_path_for(resource)
+  def after_sign_out_path_for(_resource)
     root_path(script_name: "")
   end
 
   def user_not_authorized
-    redirect_to(request.referrer || landing_path)
+    redirect_to(request.referer || landing_path)
   end
 
-  def signed_in_root_path(resource)
+  def signed_in_root_path(_resource)
     landing_path
   end
 
@@ -88,38 +88,40 @@ class ApplicationController < ActionController::Base
   def pagy_nil_safe(params, collection, vars = {})
     pagy = Pagy.new(count: collection.count(:all), page: params[:page], **vars)
     return pagy, collection.offset(pagy.offset).limit(pagy.limit) if collection.respond_to?(:offset)
-    return pagy, collection
+
+    [pagy, collection]
   end
 
   def render_partial(partial, collection:, cached: true)
     respond_to do |format|
       format.html
-      format.json {
+      format.json do
         render json: { entries: render_to_string(partial: partial, formats: [:html], collection: collection, cached: cached),
-                       pagination: render_to_string(partial: "shared/paginator", formats: [:html], locals: { pagy: @pagy }) }
-      }
+                       pagination: render_to_string(partial: "shared/paginator", formats: [:html],
+                                                    locals: { pagy: @pagy }) }
+      end
     end
   end
 
-  def render_partial_as(partial, collection:, cached: true, as:)
+  def render_partial_as(partial, collection:, as:, cached: true)
     respond_to do |format|
       format.html
-      format.json {
+      format.json do
         render json: { entries: render_to_string(partial: partial, formats: [:html], collection: collection, as: as, cached: cached),
-                       pagination: render_to_string(partial: "shared/paginator", formats: [:html], locals: { pagy: @pagy }) }
-      }
+                       pagination: render_to_string(partial: "shared/paginator", formats: [:html],
+                                                    locals: { pagy: @pagy }) }
+      end
     end
   end
 
-  def render_pdf(partial, collection:, cached: true)
+  def render_pdf(_partial, collection:, cached: true)
     respond_to do |format|
       format.html
       format.pdf do
         # here you call prawn pdf class (see below)
-        pdf =
-          send_data pdf.render, filename: "family.pdf",
-                                type: "application/pdf",
-                                disposition: "inline"
+        send_data pdf.render, filename: "family.pdf",
+                              type: "application/pdf",
+                              disposition: "inline"
       end
     end
   end
@@ -127,10 +129,11 @@ class ApplicationController < ActionController::Base
   def render_timeline(partial, collection:, cached: true)
     respond_to do |format|
       format.html
-      format.json {
+      format.json do
         render json: { entries: render_to_string(partial: partial, formats: [:html], collection: collection, as: :event, cached: cached),
-                       pagination: render_to_string(partial: "shared/paginator", formats: [:html], locals: { pagy: @pagy }) }
-      }
+                       pagination: render_to_string(partial: "shared/paginator", formats: [:html],
+                                                    locals: { pagy: @pagy }) }
+      end
     end
   end
 end

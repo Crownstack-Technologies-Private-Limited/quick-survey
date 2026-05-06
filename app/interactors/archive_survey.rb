@@ -9,7 +9,7 @@ class ArchiveSurvey < Patterns::Service
       delete_recent_surveys
       remove_from_pinned
       archive_survey
-    rescue Exception => e
+    rescue Exception
       return false
     end
     true

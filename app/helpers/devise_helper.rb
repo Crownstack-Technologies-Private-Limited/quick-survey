@@ -4,6 +4,6 @@ module DeviseHelper
 
     flash.now[:error] = resource.errors.full_messages.first
 
-    return ""
+    ""
   end
 end

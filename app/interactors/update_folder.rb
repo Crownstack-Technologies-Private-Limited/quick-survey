@@ -10,7 +10,7 @@ class UpdateFolder < Patterns::Service
   def call
     begin
       update_folder
-    rescue
+    rescue StandardError
       folder
     end
     folder
@@ -21,7 +21,8 @@ class UpdateFolder < Patterns::Service
   end
 
   def email
-    return unless !send_email.nil?
+    return if send_email.nil?
+
     (space.users - [actor]).each do |user|
       if deliver_email?(user)
         FoldersMailer.with(actor: actor, user: user, folder: folder, space: space).update_folder_email.deliver_later

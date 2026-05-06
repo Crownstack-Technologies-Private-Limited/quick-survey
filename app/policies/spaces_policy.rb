@@ -1,4 +1,4 @@
-class SpacesPolicy < Struct.new(:user, :spaces)
+SpacesPolicy = Struct.new(:user, :spaces) do
   def index?
     true
   end

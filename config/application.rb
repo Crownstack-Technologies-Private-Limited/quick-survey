@@ -15,7 +15,7 @@ module QuickSurvey
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -25,8 +25,8 @@ module QuickSurvey
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
     config.middleware.use AccountMiddleware
-    config.autoload_paths << "#{Rails.root}/lib"
-    config.autoload_paths << "#{Rails.root}/interactors"
-    config.autoload_paths << "#{Rails.root}/presenters"
+    config.autoload_paths << Rails.root.join("lib").to_s
+    config.autoload_paths << Rails.root.join("interactors").to_s
+    config.autoload_paths << Rails.root.join("presenters").to_s
   end
 end

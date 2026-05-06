@@ -8,7 +8,7 @@ class DestroySurvey < Patterns::Service
       delete_attempts
       delete_recent_surveys
       survey.destroy
-    rescue Exception => e
+    rescue Exception
       return false
     end
     true

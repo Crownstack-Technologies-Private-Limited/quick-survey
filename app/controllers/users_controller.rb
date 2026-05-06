@@ -10,11 +10,11 @@ class UsersController < BaseController
     render_partial("users/user", collection: @users, cached: true) if stale?(@users)
   end
 
-  def edit
+  def show
     authorize @user
   end
 
-  def show
+  def edit
     authorize @user
   end
 
@@ -22,7 +22,9 @@ class UsersController < BaseController
     authorize @user
     respond_to do |format|
       if @user.update(user_params)
-        format.turbo_stream { redirect_to users_path, status: 303, notice: "User has been updated successfully." }
+        format.turbo_stream do
+          redirect_to users_path, status: :see_other, notice: "User has been updated successfully."
+        end
       else
         format.turbo_stream do
           render turbo_stream: turbo_stream.replace(@user, partial: "user/forms/profile", locals: { user: @user })
@@ -33,16 +35,16 @@ class UsersController < BaseController
 
   def destroy
     authorize @user
-    if DestroyUser.call(@user).result
-      redirect_to deactivated_users_path, notice: "User has been deleted successfully."
-    end
+    return unless DestroyUser.call(@user).result
+
+    redirect_to deactivated_users_path, notice: "User has been deleted successfully."
   end
 
   def deactivate_user
     authorize @user, :update?
-    if DeactivateUser.call(@user).result
-      redirect_to deactivated_users_path, notice: "User has been deactivated."
-    end
+    return unless DeactivateUser.call(@user).result
+
+    redirect_to deactivated_users_path, notice: "User has been deactivated."
   end
 
   def activate_user
@@ -73,10 +75,10 @@ class UsersController < BaseController
   private
 
   def set_user
-    @user ||= User.find(params[:id])
+    @set_user ||= User.find(params[:id])
   end
 
   def user_params
-    params.require(:user).permit(:first_name, :last_name, :email, :phone, :role)
+    params.expect(user: %i[first_name last_name email phone role])
   end
 end

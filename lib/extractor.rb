@@ -1,24 +1,25 @@
+require "English"
 module Extractor
   module HashTag
-    def extract_hashtags(text, &block) # :yields: hashtag_text
-      hashtags = extract_hashtags_with_indices(text).map { |h| h[:hashtag] }
-      hashtags.each(&block) if block_given?
+    def extract_hashtags(text, &) # :yields: hashtag_text
+      hashtags = extract_hashtags_with_indices(text).pluck(:hashtag)
+      hashtags.each(&) if block_given?
       hashtags
     end
 
-    def extract_hashtags_with_indices(text, options = { :check_url_overlap => true }) # :yields: hashtag_text, start, end
+    def extract_hashtags_with_indices(text, _options = { check_url_overlap: true }) # :yields: hashtag_text, start, end
       return [] unless text =~ /[#＃]/
 
       tags = []
-      text.scan(Regex::Expression[:valid_hashtag]) do |before, hash, hash_text|
-        match_data = $~
+      text.scan(Regex::Expression[:valid_hashtag]) do |_before, _hash, hash_text|
+        match_data = $LAST_MATCH_INFO
         start_position = match_data.char_begin(2)
         end_position = match_data.char_end(3)
-        after = $'
-        unless after =~ Regex::Expression[:end_hashtag_match]
+        after = ::Regexp.last_match.post_match
+        unless after&.match?(Regex::Expression[:end_hashtag_match])
           tags << {
-            :hashtag => hash_text,
-            :indices => [start_position, end_position],
+            hashtag: hash_text,
+            indices: [start_position, end_position]
           }
         end
       end

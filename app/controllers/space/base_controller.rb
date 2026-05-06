@@ -1,8 +1,10 @@
-class Space::BaseController < BaseController
-  before_action :set_space, only: %i[ index edit update destroy show create new ]
-  include Pagy::Backend
+module Space
+  class BaseController < BaseController
+    before_action :set_space, only: %i[index edit update destroy show create new]
+    include Pagy::Backend
 
-  def set_space
-    @space ||= Space.find(params[:space_id])
+    def set_space
+      @set_space ||= Space.find(params[:space_id])
+    end
   end
 end

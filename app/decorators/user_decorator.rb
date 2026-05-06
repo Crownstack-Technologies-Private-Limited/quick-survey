@@ -8,15 +8,15 @@ class UserDecorator < Draper::Decorator
   end
 
   def display_name_position
-    "#{first_name} #{last_name}".titleize + " (" + display_role_title + " " + display_job_title + ")".titleize
+    "#{"#{first_name} #{last_name}".titleize} (#{display_role_title} #{display_job_title}#{')'.titleize}"
   end
 
   def display_permission
-    permission.gsub("_", " ").titleize
+    permission.tr("_", " ").titleize
   end
 
   def display_deactivated_on
-    "#{deactivated_on.to_formatted_s(:long)}"
+    deactivated_on.to_fs(:long).to_s
   end
 
   def name
@@ -24,18 +24,18 @@ class UserDecorator < Draper::Decorator
   end
 
   def display_job_title
-    job.nil? ? "" : "#{job.name}"
+    job.nil? ? "" : job.name.to_s
   end
 
   def display_role_title
-    role.nil? ? "" : "#{role.name}"
+    role.nil? ? "" : role.name.to_s
   end
 
   def display_discipline_title
-    discipline.nil? ? "" : "#{discipline.name}"
+    discipline.nil? ? "" : discipline.name.to_s
   end
 
   def display_position
-    display_role_title + " " + display_job_title
+    "#{display_role_title} #{display_job_title}"
   end
 end

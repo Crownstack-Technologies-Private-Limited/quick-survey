@@ -32,7 +32,7 @@ class SpacePolicy < ApplicationPolicy
   end
 
   def pin?
-    (record.users.include?(user) or !user.member?) and !user.pinned_spaces.pluck(:space_id).include?(record.id) and !record.archive
+    (record.users.include?(user) or !user.member?) and user.pinned_spaces.pluck(:space_id).exclude?(record.id) and !record.archive
   end
 
   def unpin?

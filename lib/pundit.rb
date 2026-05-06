@@ -274,11 +274,11 @@ module Pundit
   # @return [Hash{String => Object}] the permitted attributes
   def permitted_attributes(record, action = action_name)
     policy = policy(record)
-    method_name = if policy.respond_to?("permitted_attributes_for_#{action}")
-        "permitted_attributes_for_#{action}"
-      else
-        "permitted_attributes"
-      end
+    method_name = if policy.respond_to?(:"permitted_attributes_for_#{action}")
+                    "permitted_attributes_for_#{action}"
+                  else
+                    "permitted_attributes"
+                  end
     pundit_params_for(record).permit(*policy.public_send(method_name))
   end
 

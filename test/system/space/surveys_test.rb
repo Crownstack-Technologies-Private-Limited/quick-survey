@@ -82,7 +82,7 @@ class SurveysTest < ApplicationSystemTestCase
 
   test "can archive a survey from space details" do
     visit page_url
-    survey = survey_surveys(:two)
+    survey_surveys(:two)
     within "tr##{dom_id(@survey)}" do
       find("button", id: "survey-menu").click
       page.accept_confirm do

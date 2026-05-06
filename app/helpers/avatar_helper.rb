@@ -15,8 +15,10 @@ module AvatarHelper
     display_avatar(resource, "w-40 h-40", "text-xl", [160, 160])
   end
 
-  def display_avatar(resource, image_size, text_size, resize_limit)
-    image = content_tag(:span, (resource.first_name[0, 1] + resource.last_name[0, 1]).upcase, class: "#{text_size} font-semibold text-white leading-none", title: resource.decorate.display_name)
-    content_tag(:span, image.html_safe, class: " inline-flex items-center justify-center rounded-full bg-gray-500 ring-2 ring-white #{image_size}")
+  def display_avatar(resource, image_size, text_size, _resize_limit)
+    image = content_tag(:span, (resource.first_name[0, 1] + resource.last_name[0, 1]).upcase,
+                        class: "#{text_size} font-semibold text-white leading-none", title: resource.decorate.display_name)
+    content_tag(:span, image.html_safe,
+                class: " inline-flex items-center justify-center rounded-full bg-gray-500 ring-2 ring-white #{image_size}")
   end
 end

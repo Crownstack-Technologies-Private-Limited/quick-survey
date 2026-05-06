@@ -11,7 +11,7 @@ class DestroyUser < Patterns::Service
       delete_surveys
       delete_attempts
       user.destroy
-    rescue Exception => e
+    rescue Exception
       return false
     end
     true

@@ -8,7 +8,7 @@ class UnarchiveSpace < Patterns::Service
     begin
       unarchive_space
       send_email
-    rescue
+    rescue StandardError
       space
     end
     space
@@ -21,13 +21,13 @@ class UnarchiveSpace < Patterns::Service
   end
 
   def send_email
-    (space.users).each do |user|
+    space.users.each do |user|
       SpacesMailer.with(space: space, user: user, actor: actor).unarchived_email.deliver_later if deliver_email?(user)
     end
   end
 
   def deliver_email?(user)
-    (actor != user) and user.email_enabled and user.sign_in_count > 0
+    (actor != user) and user.email_enabled and user.sign_in_count.positive?
   end
 
   attr_reader :space, :actor
